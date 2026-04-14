@@ -27,16 +27,14 @@ cargo install hiddenwave
 ### Build from Source
 
 ```bash
-git clone [https://github.com/thehackersbrain/hiddenwave-rs.git](https://github.com/thehackersbrain/hiddenwave-rs.git)
-cd hiddenwave
+git clone https://github.com/thehackersbrain/hiddenwave-rs.git
+cd hiddenwave-rs
 cargo build --release
 ```
 
 The compiled binary will be at `./target/release/hiddenwave-rs`.
 
 ## CLI Usage
-
-HiddenWave provides intuitive short aliases (`h`, `e`, `c`) for fast terminal usage.
 
 ### 1. Check Capacity (`check` or `c`)
 
