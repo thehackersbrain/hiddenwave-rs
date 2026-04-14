@@ -30,9 +30,16 @@ pub fn extract(pcm: &[u8]) -> Result<ExtractedPayload, HiddenWaveError> {
         .copied()
         .collect();
 
+    // The sentinel is appended at the very end of the payload, so the *last*
+    // window matching it is always the real one. Using `.position()` (first
+    // match) would stop early if the payload data itself happens to contain
+    // the sentinel bytes, corrupting the extracted result silently.
     let sentinel_pos = raw_with_sentinel
         .windows(4)
-        .position(|w| w == b"@<;;")
+        .enumerate()
+        .filter(|(_, w)| *w == b"@<;;")
+        .last()
+        .map(|(i, _)| i)
         .ok_or(HiddenWaveError::SentinelMissing)?;
 
     let payload_bytes = raw_with_sentinel[..sentinel_pos].to_vec();

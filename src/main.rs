@@ -93,7 +93,7 @@ fn main() -> Result<(), HiddenWaveError> {
                     let (pcm_data, sample_rate, channels) =
                         hiddenwave_lib::mp3::decode_to_pcm(&input)?;
                     let header_bytes =
-                        WavFile::generate_header(pcm_data.len(), sample_rate, channels);
+                        WavFile::generate_header(pcm_data.len(), sample_rate, channels)?;
                     WavFile {
                         header_bytes,
                         pcm_data,

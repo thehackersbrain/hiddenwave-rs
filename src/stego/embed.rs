@@ -39,7 +39,14 @@ pub fn embed(
     }
 
     let available_payload_space = pcm.len() - header_end_offset;
-    let modulus = (available_payload_space / payload_with_sentinel.len()) as u32;
+    let modulus_usize = available_payload_space / payload_with_sentinel.len();
+
+    // modulus is stored as u32 in the header; a value exceeding u32::MAX would
+    // truncate silently and cause extraction to read from wrong positions.
+    let modulus = u32::try_from(modulus_usize).map_err(|_| HiddenWaveError::PayloadTooLarge {
+        needed: payload_with_sentinel.len(),
+        available: available_payload_space,
+    })?;
 
     if modulus <= 3 {
         return Err(HiddenWaveError::PayloadTooLarge {

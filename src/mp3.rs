@@ -43,7 +43,12 @@ pub fn decode_to_pcm(path: &std::path::Path) -> Result<(Vec<u8>, u32, u16), Hidd
             {
                 break;
             }
-            Err(_) => break,
+            Err(e) => {
+                return Err(HiddenWaveError::WavParse(format!(
+                    "MP3 read error: {}",
+                    e
+                )))
+            }
         };
 
         if packet.track_id() != track_id {
@@ -66,7 +71,12 @@ pub fn decode_to_pcm(path: &std::path::Path) -> Result<(Vec<u8>, u32, u16), Hidd
                 }
             }
             Err(symphonia::core::errors::Error::DecodeError(_)) => continue,
-            Err(_) => break,
+            Err(e) => {
+                return Err(HiddenWaveError::WavParse(format!(
+                    "MP3 decode error: {}",
+                    e
+                )))
+            }
         }
     }
 

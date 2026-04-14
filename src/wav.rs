@@ -29,7 +29,18 @@ impl WavFile {
                 break;
             }
 
-            offset += 8 + chunk_size + (chunk_size & 1);
+            // Guard against malformed files with a chunk_size that would overflow
+            // offset, which would wrap in release mode and cause an infinite loop
+            // or mis-parse on the next iteration.
+            let step = 8usize
+                .checked_add(chunk_size)
+                .and_then(|s| s.checked_add(chunk_size & 1))
+                .ok_or_else(|| {
+                    HiddenWaveError::WavParse("Chunk size overflow in WAV file".into())
+                })?;
+            offset = offset.checked_add(step).ok_or_else(|| {
+                HiddenWaveError::WavParse("Chunk offset overflow in WAV file".into())
+            })?;
         }
 
         let split_idx = data_offset
@@ -50,7 +61,21 @@ impl WavFile {
         out
     }
 
-    pub fn generate_header(pcm_len: usize, sample_rate: u32, channels: u16) -> Vec<u8> {
+    pub fn generate_header(
+        pcm_len: usize,
+        sample_rate: u32,
+        channels: u16,
+    ) -> Result<Vec<u8>, HiddenWaveError> {
+        // WAV/RIFF sizes are stored as u32; files larger than ~4 GB cannot be
+        // represented. Casting without checking silently truncates the size
+        // fields, producing an unreadable file.
+        let pcm_len_u32 = u32::try_from(pcm_len).map_err(|_| {
+            HiddenWaveError::WavParse("PCM data exceeds maximum WAV file size (~4 GB)".into())
+        })?;
+        let riff_size = pcm_len_u32.checked_add(36).ok_or_else(|| {
+            HiddenWaveError::WavParse("PCM data exceeds maximum WAV file size (~4 GB)".into())
+        })?;
+
         let bits_per_sample: u16 = 16;
         let block_align = channels * (bits_per_sample / 8);
         let byte_rate = sample_rate * block_align as u32;
@@ -58,7 +83,7 @@ impl WavFile {
         let mut header = Vec::with_capacity(44);
 
         header.extend_from_slice(b"RIFF");
-        header.extend_from_slice(&((36 + pcm_len) as u32).to_le_bytes());
+        header.extend_from_slice(&riff_size.to_le_bytes());
         header.extend_from_slice(b"WAVE");
 
         header.extend_from_slice(b"fmt ");
@@ -71,9 +96,9 @@ impl WavFile {
         header.extend_from_slice(&bits_per_sample.to_le_bytes());
 
         header.extend_from_slice(b"data");
-        header.extend_from_slice(&(pcm_len as u32).to_le_bytes());
+        header.extend_from_slice(&pcm_len_u32.to_le_bytes());
 
-        header
+        Ok(header)
     }
 }
 
@@ -82,7 +107,7 @@ mod tests {
     use super::*;
 
     fn make_minimal_wav(pcm: &[u8]) -> Vec<u8> {
-        let mut out = WavFile::generate_header(pcm.len(), 44100, 1);
+        let mut out = WavFile::generate_header(pcm.len(), 44100, 1).unwrap();
         out.extend_from_slice(pcm);
         out
     }
@@ -154,7 +179,7 @@ mod tests {
 
     #[test]
     fn test_generate_header_is_44_bytes() {
-        assert_eq!(WavFile::generate_header(1000, 44100, 2).len(), 44);
+        assert_eq!(WavFile::generate_header(1000, 44100, 2).unwrap().len(), 44);
     }
 
     #[test]
