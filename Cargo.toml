@@ -2,6 +2,12 @@
 name = "hiddenwave"
 version = "0.2.1"
 edition = "2024"
+description = "Secure audio steganography and cryptography tool. Hide encrypted files in WAV/MP3."
+license = "MIT"
+repository = "https://github.com/thehackersbrain/hiddenwave-rs"
+readme = "README.md"
+keywords = ["steganography", "crypto", "audio", "security", "cli"]
+categories = ["command-line-utilities", "cryptography", "multimedia::audio"]
 
 [[bin]]
 name = "hiddenwave"
