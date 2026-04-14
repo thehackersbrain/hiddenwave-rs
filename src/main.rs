@@ -63,7 +63,7 @@ fn banner() {
     println!("{}", logo.bright_green().bold());
     println!(
         "           {}\n\n                     [by {}]                [v{}]\n",
-        "Hide Your Secret Files in Audio Files.".bright_green(), // \033[92m
+        "Hide Your Secret Files in Audio Files.".bright_green(),
         "@thehackersbrain".bright_green().bold(),
         env!("CARGO_PKG_VERSION").bright_green().bold()
     );
