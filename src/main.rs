@@ -12,7 +12,7 @@ use hiddenwave_lib::{
 #[derive(Parser)]
 #[command(
     name = "hiddenwave",
-    about = "Hide encrypted data in WAV/MP3 audio via striding",
+    about = "Hide encrypted data in WAV/MP3 audio file",
     version
 )]
 struct Cli {

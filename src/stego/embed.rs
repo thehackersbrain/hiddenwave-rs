@@ -12,7 +12,6 @@ pub fn max_capacity(pcm_len: usize) -> usize {
 
     let available_space = pcm_len - header_end_offset;
     let sentinel_size = 4;
-
     let max_payload_plus_sentinel = available_space / 4;
 
     max_payload_plus_sentinel.saturating_sub(sentinel_size)

@@ -12,8 +12,6 @@ const ITERATIONS: u32 = 100_000;
 
 pub fn encrypt_payload(data: &[u8], password: &str) -> Result<Vec<u8>, HiddenWaveError> {
     let mut salt = [0u8; SALT_LEN];
-
-    // Use aes-gcm's internal secure random generator
     OsRng.fill_bytes(&mut salt);
 
     let mut key_bytes = [0u8; 32];
@@ -22,7 +20,6 @@ pub fn encrypt_payload(data: &[u8], password: &str) -> Result<Vec<u8>, HiddenWav
     let cipher = Aes256Gcm::new_from_slice(&key_bytes)
         .map_err(|_| HiddenWaveError::Crypto("Invalid key length".into()))?;
 
-    // Generate the nonce cleanly using the native AeadCore trait
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
     let mut ciphertext = cipher
