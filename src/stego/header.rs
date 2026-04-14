@@ -28,7 +28,7 @@ impl TryFrom<&[u8]> for StegHeader {
 
         let mut mod_bytes = [0u8; 4];
         mod_bytes.copy_from_slice(&bytes[0..4]);
-        let modulus = u32::from_ne_bytes(mod_bytes);
+        let modulus = u32::from_le_bytes(mod_bytes);
 
         let mut extension = [0u8; 4];
         extension.copy_from_slice(&bytes[4..8]);
@@ -50,7 +50,7 @@ impl TryFrom<&[u8]> for StegHeader {
 impl From<StegHeader> for [u8; 9] {
     fn from(h: StegHeader) -> [u8; 9] {
         let mut out = [0u8; 9];
-        out[0..4].copy_from_slice(&h.modulus.to_ne_bytes());
+        out[0..4].copy_from_slice(&h.modulus.to_le_bytes());
         out[4..8].copy_from_slice(&h.extension);
         out[8] = h.payload_type as u8;
         out
@@ -63,4 +63,74 @@ pub fn ext_to_bytes(ext: &str) -> [u8; 4] {
         out[i] = b;
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_header_round_trip_text() {
+        let h = StegHeader {
+            modulus: 42,
+            extension: *b"txt ",
+            payload_type: PayloadType::Text,
+        };
+        let bytes: [u8; 9] = h.into();
+        let h2 = StegHeader::try_from(bytes.as_slice()).unwrap();
+        assert_eq!(h2.modulus, 42);
+        assert_eq!(h2.extension, *b"txt ");
+        assert_eq!(h2.payload_type, PayloadType::Text);
+    }
+
+    #[test]
+    fn test_header_round_trip_binary() {
+        let h = StegHeader {
+            modulus: 999999,
+            extension: *b"pdf ",
+            payload_type: PayloadType::Binary,
+        };
+        let bytes: [u8; 9] = h.into();
+        let h2 = StegHeader::try_from(bytes.as_slice()).unwrap();
+        assert_eq!(h2.modulus, 999999);
+        assert_eq!(h2.payload_type, PayloadType::Binary);
+    }
+
+    #[test]
+    fn test_header_le_byte_order() {
+        let h = StegHeader {
+            modulus: 256,
+            extension: *b"    ",
+            payload_type: PayloadType::Text,
+        };
+        let bytes: [u8; 9] = h.into();
+        assert_eq!(&bytes[0..4], &[0x00, 0x01, 0x00, 0x00]);
+    }
+
+    #[test]
+    fn test_invalid_type_byte_errors() {
+        let bytes = [0u8, 0, 0, 0, b' ', b' ', b' ', b' ', b'x'];
+        assert!(StegHeader::try_from(bytes.as_slice()).is_err());
+    }
+
+    #[test]
+    fn test_too_short_errors() {
+        let bytes = [0u8; 5];
+        assert!(StegHeader::try_from(bytes.as_slice()).is_err());
+    }
+
+    #[test]
+    fn test_ext_to_bytes_short() {
+        assert_eq!(ext_to_bytes("rs"), *b"rs  ");
+    }
+
+    #[test]
+    fn test_ext_to_bytes_exact() {
+        assert_eq!(ext_to_bytes("jpeg"), *b"jpeg");
+    }
+
+    #[test]
+    fn test_ext_to_bytes_truncates() {
+        assert_eq!(ext_to_bytes("abcdefgh"), *b"abcd");
+    }
 }

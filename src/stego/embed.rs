@@ -74,3 +74,35 @@ pub fn embed(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_pcm(size: usize) -> Vec<u8> {
+        vec![0xABu8; size]
+    }
+
+    #[test]
+    fn test_embed_succeeds_with_sufficient_pcm() {
+        let mut pcm = make_pcm(44100 * 2);
+        assert!(embed(&mut pcm, b"hello world", "", false).is_ok());
+    }
+
+    #[test]
+    fn test_embed_fails_when_payload_too_large() {
+        let mut pcm = make_pcm(200); // tiny
+        let big_payload = vec![0u8; 10000];
+        assert!(embed(&mut pcm, &big_payload, "", false).is_err());
+    }
+
+    #[test]
+    fn test_max_capacity_is_nonzero_for_reasonable_pcm() {
+        assert!(max_capacity(44100 * 2) > 0);
+    }
+
+    #[test]
+    fn test_max_capacity_zero_for_tiny_pcm() {
+        assert_eq!(max_capacity(10), 0);
+    }
+}

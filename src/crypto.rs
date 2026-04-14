@@ -56,3 +56,39 @@ pub fn decrypt_payload(data: &[u8], password: &str) -> Result<Vec<u8>, HiddenWav
         HiddenWaveError::Crypto("Decryption failed. Incorrect password or corrupted data.".into())
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encrypt_decrypt_round_trip() {
+        let data = b"secret payload for hiddenwave";
+        let pwd = "hunter2";
+        let enc = encrypt_payload(data, pwd).unwrap();
+        let dec = decrypt_payload(&enc, pwd).unwrap();
+        assert_eq!(dec, data);
+    }
+
+    #[test]
+    fn test_wrong_password_fails() {
+        let data = b"payload";
+        let enc = encrypt_payload(data, "correct").unwrap();
+        assert!(decrypt_payload(&enc, "wrong").is_err());
+    }
+
+    #[test]
+    fn test_each_encryption_is_unique() {
+        let data = b"same data";
+        let pwd = "same password";
+        let enc1 = encrypt_payload(data, pwd).unwrap();
+        let enc2 = encrypt_payload(data, pwd).unwrap();
+        assert_ne!(enc1, enc2);
+    }
+
+    #[test]
+    fn test_too_short_data_fails_decrypt() {
+        let short = vec![0u8; 10]; // less than SALT_LEN + NONCE_LEN
+        assert!(decrypt_payload(&short, "pwd").is_err());
+    }
+}
