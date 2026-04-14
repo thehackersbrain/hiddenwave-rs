@@ -4,14 +4,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Portfolio](https://img.shields.io/badge/Portfolio-Live-black?style=for-the-badge)](https://thehackersbrain.dev)
 
-**Secure Audio Steganography & Cryptography in Pure Rust**
+**Secure Audio Steganography & Cryptography in Rust**
 
 HiddenWave is a fast, memory-safe CLI tool and library that hides files and text messages inside audio files (WAV/MP3) using a striding byte-injection algorithm. It combines **steganography** (hiding the existence of data) with **AES-256-GCM cryptography** (protecting the contents).
 
 ## Features
 
 - **WAV & MP3 Support:** Natively parse WAV files or decode MP3s on the fly via `symphonia`.
-- **Military-Grade Encryption:** Payloads are encrypted and authenticated using AES-256-GCM with a PBKDF2-derived key.
+- **Encryption:** Payloads are encrypted and authenticated using AES-256-GCM with a PBKDF2-derived key.
 - **Striding Algorithm:** Distributes the payload evenly across the audio file to minimize distortion.
 - **Format Preservation:** Automatically outputs safe lossless `.wav` formats to prevent lossy compression from destroying payloads.
 - **Library API:** Exposes `hiddenwave_lib` for easy integration into other Rust projects.
