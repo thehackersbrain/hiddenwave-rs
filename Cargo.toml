@@ -1,0 +1,21 @@
+[package]
+name = "hiddenwave"
+version = "0.2.1"
+edition = "2024"
+
+[[bin]]
+name = "hiddenwave"
+path = "src/main.rs"
+
+[lib]
+name = "hiddenwave_lib"
+path = "src/lib.rs"
+
+[dependencies]
+aes-gcm = { version = "0.10.3", features = ["getrandom"] }
+clap = { version = "4.6.0", features = ["derive"] }
+pbkdf2 = "0.12.2"
+rand = "0.10.1"
+sha2 = "0.10.8"
+symphonia = { version = "0.5.5", features = ["mp3"] }
+thiserror = "2.0.18"
