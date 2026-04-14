@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use colored::Colorize;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -43,8 +44,8 @@ enum Commands {
         #[arg(short, long)]
         password: Option<String>,
     },
-    #[command(name = "capacity", visible_alias = "c")]
-    Capacity {
+    #[command(name = "check", visible_alias = "c")]
+    Check {
         #[arg(short, long)]
         input: PathBuf,
     },
@@ -65,7 +66,11 @@ fn main() -> Result<(), HiddenWaveError> {
 
             let mut wav = match input_ext.as_str() {
                 "mp3" => {
-                    println!("[*] MP3 detected. Decoding to raw PCM...");
+                    println!(
+                        "[{}] {}",
+                        "*".cyan().bold(),
+                        "MP3 detected. Decoding to raw PCM...".cyan()
+                    );
                     let (pcm_data, sample_rate, channels) =
                         hiddenwave_lib::mp3::decode_to_pcm(&input)?;
                     let header_bytes =
@@ -90,7 +95,9 @@ fn main() -> Result<(), HiddenWaveError> {
             let mut final_output = output;
             if input_ext == "mp3" && final_output.extension().unwrap_or_default() != "wav" {
                 println!(
-                    "[!] Warning: Outputting as .wav to prevent payload destruction via lossy compression."
+                    "[{}] {}",
+                    "!".yellow().bold(),
+                    "Warning: Outputting as .wav to prevent payload destruction via lossy compression.".yellow()
                 );
                 final_output.set_extension("wav");
             }
@@ -106,7 +113,11 @@ fn main() -> Result<(), HiddenWaveError> {
             };
 
             if let Some(pwd) = password {
-                println!("[*] Encrypting payload with AES-256-GCM...");
+                println!(
+                    "[{}] {}",
+                    "*".cyan().bold(),
+                    "Encrypting payload with AES-256-GCM...".cyan()
+                );
                 raw_payload = hiddenwave_lib::crypto::encrypt_payload(&raw_payload, &pwd)?;
             }
 
@@ -120,7 +131,12 @@ fn main() -> Result<(), HiddenWaveError> {
             embed(&mut wav.pcm_data, &raw_payload, &ext, is_binary)?;
 
             fs::write(&final_output, wav.to_bytes())?;
-            println!("[+] Data Hidden Successfully. Saved to {:?}", final_output);
+            println!(
+                "[{}] {} {:?}",
+                "+".green().bold(),
+                "Data Hidden Successfully. Saved to".green(),
+                final_output
+            );
         }
 
         Commands::Extract {
@@ -141,9 +157,8 @@ fn main() -> Result<(), HiddenWaveError> {
 
             let mut extracted = extract(&wav.pcm_data)?;
 
-            // Decryption is now a default feature
             if let Some(pwd) = password {
-                println!("[*] Decrypting payload...");
+                println!("[{}] {}", "*".cyan().bold(), "Decrypting payload...".cyan());
                 extracted.data = hiddenwave_lib::crypto::decrypt_payload(&extracted.data, &pwd)?;
             }
 
@@ -152,7 +167,12 @@ fn main() -> Result<(), HiddenWaveError> {
                     let text = String::from_utf8(extracted.data).unwrap_or_else(|_| {
                         "Error: Decrypted data is not valid UTF-8 text. Wrong password?".to_string()
                     });
-                    println!("[+] Extracted Message:\n{}", text);
+                    println!(
+                        "[{}] {}\n{}",
+                        "+".green().bold(),
+                        "Extracted Message:".green(),
+                        text.white()
+                    );
                 }
                 hiddenwave_lib::stego::header::PayloadType::Binary => {
                     let mut out_path = output.unwrap_or_else(|| PathBuf::from("output"));
@@ -161,17 +181,26 @@ fn main() -> Result<(), HiddenWaveError> {
                     }
 
                     fs::write(&out_path, extracted.data)?;
-                    println!("[+] File Extracted Successfully. Saved to {:?}", out_path);
+                    println!(
+                        "[{}] {} {:?}",
+                        "+".green().bold(),
+                        "File Extracted Successfully. Saved to".green(),
+                        out_path
+                    );
                 }
             }
         }
 
-        Commands::Capacity { input } => {
+        Commands::Check { input } => {
             let input_ext = get_ext(&input).unwrap_or_default().to_lowercase();
 
             let pcm_len = match input_ext.as_str() {
                 "mp3" => {
-                    println!("[*] MP3 detected. Decoding to calculate true PCM capacity...");
+                    println!(
+                        "[{}] {}",
+                        "*".cyan().bold(),
+                        "MP3 detected. Decoding to calculate true PCM capacity...".cyan()
+                    );
                     let (pcm_data, _, _) = hiddenwave_lib::mp3::decode_to_pcm(&input)?;
                     pcm_data.len()
                 }
@@ -193,13 +222,18 @@ fn main() -> Result<(), HiddenWaveError> {
             let max_mb = max_kb / 1024.0;
 
             println!(
-                "\n[\033[0;92m*\033[0;0m] Capacity Analysis for: {:?}",
+                "\n[{}] {} {:?}",
+                "*".green().bold(),
+                "Capacity Analysis for:".green(),
                 input
             );
-            println!("    Raw PCM Size : {} bytes", pcm_len);
+            println!("    {} : {} bytes", "Raw PCM Size".cyan(), pcm_len);
             println!(
-                "    Max Payload  : {} bytes ({:.2} KB / {:.2} MB)\n",
-                max_bytes, max_kb, max_mb
+                "    {}  : {} bytes ({:.2} KB / {:.2} MB)\n",
+                "Max Payload ".green().bold(),
+                max_bytes,
+                max_kb,
+                max_mb
             );
         }
     }
