@@ -51,7 +51,26 @@ enum Commands {
     },
 }
 
+fn banner() {
+    let logo = r#"
+  ___ ___ .__    .___  .___            __      __                     
+ /   |   \|__| __| _/__| _/____   ____/  \    /  \________  __ ____  
+/    ~    \  |/ __ |/ __ |/ __ \ /    \   \/\/   /\__  \  \/ // __ \ 
+\    Y    /  / /_/ / /_/ \  ___/|   |  \        /  / __ \   /\  ___/ 
+ \___|_  /|__\____ \____ |\___  >___|  /\__/\  /  (____ /\_/  \___ >
+       \/         \/    \/    \/     \/      \/        \/         \/ "#;
+
+    println!("{}", logo.bright_green().bold());
+    println!(
+        "           {}\n\n                     [by {}]                [v{}]\n",
+        "Hide Your Secret Files in Audio Files.".bright_green(), // \033[92m
+        "@thehackersbrain".bright_green().bold(),
+        env!("CARGO_PKG_VERSION").bright_green().bold()
+    );
+}
+
 fn main() -> Result<(), HiddenWaveError> {
+    banner();
     let cli = Cli::parse();
 
     match cli.command {

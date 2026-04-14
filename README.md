@@ -11,7 +11,7 @@ HiddenWave is a fast, memory-safe CLI tool and library that hides files and text
 ## Features
 
 - **WAV & MP3 Support:** Natively parse WAV files or decode MP3s on the fly via `symphonia`.
-- **Encryption:** Payloads are encrypted and authenticated using AES-256-GCM with a PBKDF2-derived key.
+- **Military-Grade Encryption:** Payloads are encrypted and authenticated using AES-256-GCM with a PBKDF2-derived key.
 - **Striding Algorithm:** Distributes the payload evenly across the audio file to minimize distortion.
 - **Format Preservation:** Automatically outputs safe lossless `.wav` formats to prevent lossy compression from destroying payloads.
 - **Library API:** Exposes `hiddenwave_lib` for easy integration into other Rust projects.
