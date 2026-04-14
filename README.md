@@ -1,8 +1,8 @@
 # HiddenWave 🌊
 
 [![Crates.io](https://img.shields.io/crates/v/hiddenwave.svg)](https://crates.io/crates/hiddenwave)
-[![Documentation](https://docs.rs/hiddenwave/badge.svg)](https://docs.rs/hiddenwave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Live-black?style=for-the-badge)](https://your-portfolio-link.com)
 
 **Secure Audio Steganography & Cryptography in Pure Rust**
 
