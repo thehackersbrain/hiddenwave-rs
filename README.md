@@ -8,6 +8,8 @@
 
 HiddenWave is a fast, memory-safe CLI tool and library that hides files and text messages inside audio files (WAV/MP3) using a striding byte-injection algorithm. It combines **steganography** (hiding the existence of data) with **AES-256-GCM cryptography** (protecting the contents).
 
+It's a re-write of the [original](https://github.com/thehackersbrain/hiddenwave) C++ version
+
 ## Features
 
 - **WAV & MP3 Support:** Natively parse WAV files or decode MP3s on the fly via `symphonia`.
